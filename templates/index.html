@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>手不停 Inspect · 现场巡检记录结构化助手</title>
+<style>
+  :root{
+    --bg:#0f1521; --panel:#16202e; --panel2:#1c2838;
+    --text:#e7eef7; --muted:#93a4ba; --accent:#3da9fc; --green:#2ecc71; --red:#ff5d5d; --amber:#ffb454;
+    --line:#2a3950;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(160deg,#0b111b,#0f1521 40%,#101a28);color:var(--text);min-height:100vh}
+  .wrap{max-width:980px;margin:0 auto;padding:32px 20px 80px}
+  header h1{font-size:26px;margin:0 0 6px;letter-spacing:.5px}
+  header p{color:var(--muted);margin:0 0 4px;font-size:14px;line-height:1.6}
+  .badge{display:inline-block;font-size:12px;padding:3px 10px;border-radius:999px;background:#1d2c40;color:var(--accent);margin-right:8px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:18px}
+  textarea{width:100%;min-height:150px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+    color:var(--text);padding:14px;font-size:14px;line-height:1.7;resize:vertical;font-family:inherit}
+  .row{display:flex;gap:12px;align-items:center;margin-top:14px;flex-wrap:wrap}
+  button{background:var(--accent);color:#04121f;border:none;border-radius:10px;padding:11px 22px;font-size:15px;
+    font-weight:600;cursor:pointer;transition:.15s}
+  button:hover{filter:brightness(1.08)}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  .hint{color:var(--muted);font-size:13px}
+  .decisions{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
+  .chip{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;flex:1;min-width:200px}
+  .chip .k{color:var(--muted);font-size:12px}
+  .chip .v{font-size:18px;font-weight:700;margin-top:4px}
+  .v.yes,.v.needs_escalation,.v.incomplete{color:var(--red)} .v.no_escalation,.v.complete{color:var(--green)}
+  table{width:100%;border-collapse:collapse;margin-top:8px;font-size:14px}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:600;font-size:12px}
+  tr.abn td:last-child{color:var(--red);font-weight:600}
+  tr.ok td:last-child{color:var(--green)}
+  .masked{background:var(--panel2);border-radius:10px;padding:14px;font-size:14px;line-height:1.8;white-space:pre-wrap;word-break:break-all}
+  .gclaim{border-left:3px solid var(--accent);padding:8px 12px;margin:8px 0;background:var(--panel2);border-radius:0 8px 8px 0}
+  .gclaim .verdict{font-weight:700} .v-supported{color:var(--green)} .v-contradicted{color:var(--red)} .v-not_stated{color:var(--amber)}
+  .ev{color:var(--muted);font-size:12px;margin-top:4px}
+  .demo{background:#3a2a12;color:#ffcf8b;border:1px solid #6b4b18;border-radius:10px;padding:10px 14px;margin-top:14px;font-size:13px}
+  .hidden{display:none}
+  footer{color:var(--muted);font-size:12px;margin-top:30px;line-height:1.7}
+  code{background:#0c1320;padding:1px 6px;border-radius:5px;color:#9fd0ff}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>手不停 Inspect</h1>
+    <p>把一段自由文本的现场巡检口述 / 记录，结构化、脱敏、判级、核依据。基于 <b>Clocked by Rezolve.ai</b> 结构化 API。</p>
+    <p>
+      <span class="badge">Protect · PII 脱敏</span>
+      <span class="badge">Extract · 读数抽取</span>
+      <span class="badge">Decide · 异常判级</span>
+      <span class="badge">Verify · 依据核查</span>
+    </p>
+  </header>
+
+  <div class="card">
+    <textarea id="txt" placeholder="粘贴一段现场巡检记录，例如：
+P-101 出口压力 0.62 MPa，正常。P-102 出口压力 0.71 MPa，偏高，需关注。V-203 调节阀开度 45%。T-305 轴承温度 58℃。巡检人：张伟，电话 13800000000。"></textarea>
+    <div class="row">
+      <button id="run">分析这条记录</button>
+      <span class="hint">一次分析 = 1 次 Pipeline（PII+Extract+Decide）+ 1 次 Grounding，约数百 credits</span>
+    </div>
+    <div id="demo" class="demo hidden"></div>
+  </div>
+
+  <div id="out" class="hidden">
+    <div class="card">
+      <h3 style="margin:0 0 6px">① 处置决策（Decide，带概率）</h3>
+      <div class="decisions" id="decisions"></div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 6px">② 脱敏后的原文（Protect · PII）</h3>
+      <div class="masked" id="masked"></div>
+      <div class="hint" id="pii" style="margin-top:8px"></div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 6px">③ 结构化读数（Extract）</h3>
+      <table id="tbl"><thead><tr><th>设备</th><th>读数</th><th>状态</th></tr></thead><tbody></tbody></table>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 6px">④ 依据核查（Verify · Grounding）</h3>
+      <div id="grounding"></div>
+    </div>
+  </div>
+
+  <footer>
+    手不停 Inspect · Clocked Build Challenge 参赛作品。后端以 Python 标准库调用 Clocked
+    <code>/pipeline</code> 与 <code>/grounding</code> 端点，三组端点（Decide/Extract/Fill、
+    Protect/Guard/Inspect、Verify/Compare/Rerank）全覆盖。详见仓库 README。
+  </footer>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+async function run(){
+  const btn=$('#run'); btn.disabled=true; btn.textContent='分析中…';
+  const text=$('#txt').value.trim();
+  if(!text){alert('请先粘贴巡检记录'); btn.disabled=false; btn.textContent='分析这条记录'; return;}
+  try{
+    const r=await fetch('/analyze',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({text})});
+    const d=await r.json();
+    render(d);
+  }catch(e){ alert('请求失败：'+e); }
+  finally{ btn.disabled=false; btn.textContent='分析这条记录'; }
+}
+function render(d){
+  $('#out').classList.remove('hidden');
+  const demo=$('#demo');
+  if(d.demo_mode){ demo.classList.remove('hidden');
+    demo.textContent='⚠️ 当前为演示模式（未配置 CLOCKED_API_KEY 或调用失败），以下为示例结果。配置 Key 后重启即为实时结果。'; }
+  else demo.classList.add('hidden');
+
+  // decisions
+  const dec=$('#decisions'); dec.innerHTML='';
+  const label={escalation:'是否需上报',complete:'记录是否完整'};
+  const map={escalation:{needs_escalation:'需上报',no_escalation:'无需上报',not_established:'无法判定'},
+             complete:{complete:'完整',incomplete:'不完整',not_established:'无法判定'}};
+  for(const k of ['escalation','complete']){
+    const v=d.decisions?.[k]; if(!v) continue;
+    const cls=v.choice||'';
+    const txt=(map[k]&&map[k][v.choice])||v.choice;
+    const p=v.probability!=null?(' · '+Math.round(v.probability*100)+'%'):'';
+    dec.innerHTML+=`<div class="chip"><div class="k">${label[k]||k}</div><div class="v ${cls}">${txt}${p}</div></div>`;
+  }
+
+  // masked
+  $('#masked').textContent=d.masked_text||'';
+  $('#pii').textContent= (d.pii&&d.pii.length)? ('已识别并脱敏个人信息：'+d.pii.map(x=>x[0]+'×'+x.length).join('，')) : '未识别到需脱敏的个人信息';
+
+  // readings
+  const tb=$('#tbl').querySelector('tbody'); tb.innerHTML='';
+  (d.readings||[]).forEach(r=>{
+    const abn=/偏高|偏低|异常|需关注|泄漏|异响|破损|报警|超限|裂/.test(r.status||'');
+    const tr=document.createElement('tr'); tr.className=abn?'abn':'ok';
+    tr.innerHTML=`<td>${r.device||''}</td><td>${r.reading||''}</td><td>${r.status||''}</td>`;
+    tb.appendChild(tr);
+  });
+  if(!(d.readings||[]).length) tb.innerHTML='<tr><td colspan="3" style="color:var(--muted)">未抽取到结构化读数</td></tr>';
+
+  // grounding
+  const g=$('#grounding'); g.innerHTML='';
+  const gr=d.grounding;
+  if(!gr){ g.innerHTML='<div class="hint">未返回核查结果</div>'; }
+  else{
+    const v=(gr.verdict||'');
+    g.innerHTML=`<div class="hint">整体核查结论：<b>${v}</b>${gr.grounded!=null?(' · 支持度 '+Math.round(gr.grounded*100)+'%'):''}</div>`;
+    (gr.claims||[]).forEach(c=>{
+      g.innerHTML+=`<div class="gclaim"><div class="verdict v-${c.verdict}">${c.verdict||''}</div><div>${c.claim||''}</div>`+
+        (c.evidence?`<div class="ev">依据：${c.evidence}</div>`:'')+`</div>`;
+    });
+  }
+}
+$('#run').addEventListener('click',run);
+</script>
+</body>
+</html>
