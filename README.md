@@ -56,20 +56,48 @@ python3 app.py
 Without a key the app still runs in **demo mode** (it returns a built-in sample result), so the
 UI is fully demonstrable even before you add a key.
 
+## Verified with real API calls (not mock data)
+
+`demo.html` and `demo_data.json` are populated by an **actual `app.build_report()` run on
+2026-11-09** against the live Clocked API, using a synthetic inspection log (fictional inspector
+name and phone). The raw responses are committed in **`real_call_evidence.json`** so reviewers can
+check every field. No API keys or real personal data are included anywhere in this repository.
+
+Observed real results:
+
+| Endpoint | Real output |
+|---|---|
+| `pii` | found `person name` + `phone number` with exact character offsets → app masks them |
+| `extract` | 4 equipment readings as records (`P-101 0.62 MPa 正常`, `P-102 0.71 MPa 偏高，需关注`, …) |
+| `decide` | `needs_escalation` at **0.9956**, `complete` at **0.7851**, with full probability distributions → drives the escalation badge |
+| `grounding` | `grounded` **0.8866**, claim `supported`, with a verbatim quote from the procedure → if the verdict is *not* supported, the app sets `needs_review` and flags the record for human review |
+
+That last row is the important one: **the endpoint output changes what the application does**, it
+is not a call whose result is ignored.
+
 ## Demo without a server (judges / reviewers)
 
-Open **`demo.html`** directly in any browser — it is fully self-contained and shows the complete
-UI populated with a real-shaped sample result. No server, no key.
+Open **`demo.html`** directly in any browser — fully self-contained, shows the complete UI with the
+real captured result. Or open the hosted page:
+**https://yydmmwj54k-cpu.github.io/clocked-inspect/demo.html**
 
 ## Files
 - `app.py` — zero-dependency HTTP server + Clocked client (pipeline + grounding) + result parser.
 - `templates/index.html` — the live UI (fetches `/analyze`).
-- `demo.html` — self-contained offline demo with embedded sample data.
-- `demo_data.json` — the sample result shown in the demo.
+- `demo.html` — self-contained demo with the embedded real result.
+- `demo_data.json` — the real result shown in the demo.
+- `real_call_evidence.json` — raw Pipeline + Grounding responses (synthetic data only).
 
 ## Notes
 - Each analysis = 1 Pipeline call (≤ 800 credit reservation) + 1 Grounding call. With the 20,000
   challenge credits this is comfortably in budget.
-- The inspection procedure text in `app.py` (`STANDARD_TEXT`) is a placeholder; swap in your own
-  SOP for production.
+- Grounding receives **two documents** (the procedure *and* the original log): checking a claim
+  with a specific reading against the procedure alone correctly returns `not_stated`, which was
+  confirmed in a real call. Supplying both makes the verdict meaningful.
+- Behind Cloudflare-fronted or corporate networks, `urllib` may get a 403 challenge; the client
+  automatically retries through `curl`, honouring `HTTPS_PROXY` / `https_proxy`.
+  ```bash
+  export https_proxy="http://127.0.0.1:7897"   # only if you need a proxy
+  ```
+- The inspection procedure text (`STANDARD_TEXT`) is a placeholder; swap in your own SOP.
 - Idempotency keys are generated per request; retries are safe.
