@@ -1,22 +1,69 @@
 {
-  "input_chars": 96,
-  "masked_text": "P-101 出口压力 0.62 MPa，正常。P-102 出口压力 0.71 MPa，偏高，需关注。V-203 调节阀开度 45%。巡检人：███，电话 ████████。",
-  "pii": [["person name", "张伟"], ["phone number", "13800000000"]],
+  "input_chars": 103,
+  "masked_text": "P-101 出口压力 0.62 MPa，正常。P-102 出口压力 0.71 MPa，偏高，需关注。V-203 调节阀开度 45%。T-305 轴承温度 58℃。巡检人：██，电话 ███████████。",
+  "pii": [
+    [
+      "person name",
+      "张伟"
+    ],
+    [
+      "phone number",
+      "13800000000"
+    ]
+  ],
   "readings": [
-    {"device": "P-101", "reading": "0.62 MPa", "status": "正常"},
-    {"device": "P-102", "reading": "0.71 MPa", "status": "偏高，需关注"},
-    {"device": "V-203", "reading": "开度 45%", "status": "正常"}
+    {
+      "device": "P-101",
+      "reading": "0.62 MPa",
+      "status": "正常"
+    },
+    {
+      "device": "P-102",
+      "reading": "0.71 MPa",
+      "status": "偏高，需关注"
+    },
+    {
+      "device": "V-203",
+      "reading": "45",
+      "status": ""
+    },
+    {
+      "device": "T-305",
+      "reading": "58℃",
+      "status": ""
+    }
   ],
   "decisions": {
-    "escalation": {"choice": "needs_escalation", "probability": 0.94, "probabilities": {"needs_escalation": 0.94, "no_escalation": 0.04, "not_established": 0.02}},
-    "complete": {"choice": "complete", "probability": 0.97, "probabilities": {"complete": 0.97, "incomplete": 0.02, "not_established": 0.01}}
+    "escalation": {
+      "choice": "needs_escalation",
+      "probability": 0.9956,
+      "probabilities": {
+        "needs_escalation": 0.9956,
+        "no_escalation": 0.0023,
+        "not_established": 0.0021
+      }
+    },
+    "complete": {
+      "choice": "complete",
+      "probability": 0.7851,
+      "probabilities": {
+        "complete": 0.7851,
+        "incomplete": 0.1895,
+        "not_established": 0.0254
+      }
+    }
   },
   "grounding": {
-    "grounded": 0.91,
-    "verdict": "supported",
+    "grounded": 0.8866,
+    "verdict": "grounded",
     "claims": [
-      {"claim": "记录中 P-102 读数 0.71 MPa 状态为「偏高，需关注」，属于需关注的异常，应按规程上报。", "verdict": "supported", "supported": 0.91, "evidence": "第 3.2 条：凡标注为偏高、偏低、泄漏、异响、破损或需关注的读数，均须立即上报值班班长。"}
-    ]
-  },
-  "demo_mode": true
+      {
+        "claim": "记录中 P-102 读数 0.71 MPa 状态为「偏高，需关注」，属于需关注的异常，应按规程上报。",
+        "verdict": "supported",
+        "supported": 0.8866,
+        "evidence": "第 3.2 条：现场巡检中，凡标注为偏高、偏低、泄漏、异响、破损或需关注的读数，均须立即上报值班班长，并在巡检系统中记录异常等级与处置建议。"
+      }
+    ],
+    "needs_review": false
+  }
 }
