@@ -43,7 +43,7 @@
     <h1>手不停 Inspect · Demo</h1>
     <p>把一段自由文本的现场巡检口述 / 记录，结构化、脱敏、判级、核依据。基于 <b>Clocked by Rezolve.ai</b> 结构化 API。</p>
     <p><span class="badge">Protect · PII 脱敏</span><span class="badge">Extract · 读数抽取</span><span class="badge">Decide · 异常判级</span><span class="badge">Verify · 依据核查</span></p>
-    <div class="demotag">本页为离线演示：内置一段示例巡检记录的真实结构化结果（来自 Clocked API 输出样例），无需服务器、无需 API Key 即可查看完整交互。运行 <code>app.py</code> 并配置 <code>CLOCKED_API_KEY</code> 后即为实时应用。</div>
+    <div class="demotag">本页展示的是 <b>2026-11-09 真实调用 Clocked API 的输出</b>（Pipeline: PII + Extract + Decide，以及 Grounding 依据核查），数据未做任何手工编造。原始响应见仓库 <code>real_call_evidence.json</code>。运行 <code>app.py</code> 并配置 <code>CLOCKED_API_KEY</code> 后可对任意巡检记录实时重跑。</div>
   </header>
 
   <div class="card">
@@ -72,26 +72,73 @@
 </div>
 <script>
 const DEMO = {
-  "input_chars": 96,
-  "masked_text": "P-101 出口压力 0.62 MPa，正常。P-102 出口压力 0.71 MPa，偏高，需关注。V-203 调节阀开度 45%。巡检人：███，电话 ████████。",
-  "pii": [["person name", "张伟"], ["phone number", "13800000000"]],
+  "input_chars": 103,
+  "masked_text": "P-101 出口压力 0.62 MPa，正常。P-102 出口压力 0.71 MPa，偏高，需关注。V-203 调节阀开度 45%。T-305 轴承温度 58℃。巡检人：██，电话 ███████████。",
+  "pii": [
+    [
+      "person name",
+      "张伟"
+    ],
+    [
+      "phone number",
+      "13800000000"
+    ]
+  ],
   "readings": [
-    {"device": "P-101", "reading": "0.62 MPa", "status": "正常"},
-    {"device": "P-102", "reading": "0.71 MPa", "status": "偏高，需关注"},
-    {"device": "V-203", "reading": "开度 45%", "status": "正常"}
+    {
+      "device": "P-101",
+      "reading": "0.62 MPa",
+      "status": "正常"
+    },
+    {
+      "device": "P-102",
+      "reading": "0.71 MPa",
+      "status": "偏高，需关注"
+    },
+    {
+      "device": "V-203",
+      "reading": "45",
+      "status": ""
+    },
+    {
+      "device": "T-305",
+      "reading": "58℃",
+      "status": ""
+    }
   ],
   "decisions": {
-    "escalation": {"choice": "needs_escalation", "probability": 0.94, "probabilities": {"needs_escalation": 0.94, "no_escalation": 0.04, "not_established": 0.02}},
-    "complete": {"choice": "complete", "probability": 0.97, "probabilities": {"complete": 0.97, "incomplete": 0.02, "not_established": 0.01}}
+    "escalation": {
+      "choice": "needs_escalation",
+      "probability": 0.9956,
+      "probabilities": {
+        "needs_escalation": 0.9956,
+        "no_escalation": 0.0023,
+        "not_established": 0.0021
+      }
+    },
+    "complete": {
+      "choice": "complete",
+      "probability": 0.7851,
+      "probabilities": {
+        "complete": 0.7851,
+        "incomplete": 0.1895,
+        "not_established": 0.0254
+      }
+    }
   },
   "grounding": {
-    "grounded": 0.91,
-    "verdict": "supported",
+    "grounded": 0.8866,
+    "verdict": "grounded",
     "claims": [
-      {"claim": "记录中 P-102 读数 0.71 MPa 状态为「偏高，需关注」，属于需关注的异常，应按规程上报。", "verdict": "supported", "supported": 0.91, "evidence": "第 3.2 条：凡标注为偏高、偏低、泄漏、异响、破损或需关注的读数，均须立即上报值班班长。"}
-    ]
-  },
-  "demo_mode": true
+      {
+        "claim": "记录中 P-102 读数 0.71 MPa 状态为「偏高，需关注」，属于需关注的异常，应按规程上报。",
+        "verdict": "supported",
+        "supported": 0.8866,
+        "evidence": "第 3.2 条：现场巡检中，凡标注为偏高、偏低、泄漏、异响、破损或需关注的读数，均须立即上报值班班长，并在巡检系统中记录异常等级与处置建议。"
+      }
+    ],
+    "needs_review": false
+  }
 };
 const $ = s => document.querySelector(s);
 function render(d){
