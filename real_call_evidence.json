@@ -1,0 +1,396 @@
+{
+  "captured_at": "2026-11-09",
+  "note": "Real Clocked API responses. Synthetic inspection log; no real personal data, no API keys.",
+  "input_text": "P-101 出口压力 0.62 MPa，正常。P-102 出口压力 0.71 MPa，偏高，需关注。V-203 调节阀开度 45%。T-305 轴承温度 58℃。巡检人：张伟，电话 13800000000。",
+  "pipeline": {
+    "model": "clocked-1.0",
+    "steps": [
+      {
+        "step": 0,
+        "endpoint": "pii",
+        "status": 200,
+        "ms": 51,
+        "result": {
+          "model": "clocked-1.0",
+          "entities": [
+            {
+              "type": "person name",
+              "value": "张伟",
+              "start": 85,
+              "end": 87,
+              "confidence": 1,
+              "source": "model",
+              "mentions": 1
+            },
+            {
+              "type": "phone number",
+              "value": "13800000000",
+              "start": 91,
+              "end": 102,
+              "confidence": 1,
+              "source": "model",
+              "mentions": 1
+            }
+          ],
+          "counts": {
+            "person name": 1,
+            "phone number": 1
+          },
+          "threshold": 0.5,
+          "instructions_used": "default",
+          "mentions": {
+            "candidates": 0,
+            "variants": 0,
+            "reads": 0,
+            "verified": 0,
+            "occurrences": {
+              "read": 0,
+              "kept": 0
+            },
+            "rejected": {},
+            "spans": 0,
+            "ms": 0
+          },
+          "checks": {
+            "trimmed": 0,
+            "split": 0,
+            "rejected": {}
+          },
+          "timing": {
+            "read_ms": 51,
+            "total_ms": 51
+          }
+        }
+      },
+      {
+        "step": 1,
+        "endpoint": "extract",
+        "status": 200,
+        "ms": 267,
+        "result": {
+          "model": "clocked-1.0",
+          "fields": {
+            "readings": {
+              "value": [
+                {
+                  "device": "P-101",
+                  "reading": "0.62 MPa",
+                  "status": "正常"
+                },
+                {
+                  "device": "P-102",
+                  "reading": "0.71 MPa",
+                  "status": "偏高，需关注"
+                },
+                {
+                  "device": "V-203",
+                  "reading": "45",
+                  "status": null
+                },
+                {
+                  "device": "T-305",
+                  "reading": "58℃",
+                  "status": null
+                }
+              ],
+              "items": [
+                {
+                  "start": 0,
+                  "end": 23,
+                  "fields": {
+                    "device": {
+                      "value": "P-101",
+                      "start": 0,
+                      "end": 5,
+                      "p_start": 1,
+                      "p_close": 1,
+                      "p_point": 0.5,
+                      "p_verify": 1,
+                      "confidence": 1
+                    },
+                    "reading": {
+                      "value": "0.62 MPa",
+                      "start": 11,
+                      "end": 19,
+                      "p_start": 1,
+                      "p_close": 1,
+                      "p_point": 1,
+                      "p_verify": 1,
+                      "confidence": 1
+                    },
+                    "status": {
+                      "value": "正常",
+                      "start": 20,
+                      "end": 22,
+                      "p_start": 1,
+                      "p_close": 1,
+                      "p_point": 1,
+                      "p_verify": 1,
+                      "confidence": 1
+                    }
+                  }
+                },
+                {
+                  "start": 23,
+                  "end": 50,
+                  "fields": {
+                    "device": {
+                      "value": "P-102",
+                      "start": 23,
+                      "end": 28,
+                      "p_start": 1,
+                      "p_close": 1,
+                      "p_point": 0.5,
+                      "p_verify": 1,
+                      "confidence": 1
+                    },
+                    "reading": {
+                      "value": "0.71 MPa",
+                      "start": 34,
+                      "end": 42,
+                      "p_start": 1,
+                      "p_close": 1,
+                      "p_point": 1,
+                      "p_verify": 1,
+                      "confidence": 1
+                    },
+                    "status": {
+                      "value": "偏高，需关注",
+                      "start": 43,
+                      "end": 49,
+                      "p_start": 1,
+                      "p_close": 1,
+                      "p_point": 1,
+                      "p_verify": 1,
+                      "confidence": 1
+                    }
+                  }
+                },
+                {
+                  "start": 50,
+                  "end": 66,
+                  "fields": {
+                    "device": {
+                      "value": "V-203",
+                      "start": 50,
+                      "end": 55,
+                      "p_start": 1,
+                      "p_close": 1,
+                      "p_point": 0.5,
+                      "p_verify": 1,
+                      "confidence": 1
+                    },
+                    "reading": {
+                      "value": "45",
+                      "start": 62,
+                      "end": 64,
+                      "p_start": 1,
+                      "p_close": 0.554,
+                      "p_point": 1,
+                      "p_verify": 1,
+                      "confidence": 0.554
+                    },
+                    "status": {
+                      "value": null,
+                      "confidence": 0.942,
+                      "p_blank": 0.942
+                    }
+                  }
+                },
+                {
+                  "start": 66,
+                  "end": 103,
+                  "fields": {
+                    "device": {
+                      "value": "T-305",
+                      "start": 66,
+                      "end": 71,
+                      "p_start": 1,
+                      "p_close": 1,
+                      "p_point": 0.5,
+                      "p_verify": 1,
+                      "confidence": 1
+                    },
+                    "reading": {
+                      "value": "58℃",
+                      "start": 77,
+                      "end": 80,
+                      "p_start": 1,
+                      "p_close": 1,
+                      "p_point": 1,
+                      "p_verify": 1,
+                      "confidence": 1
+                    },
+                    "status": {
+                      "value": null,
+                      "confidence": 0.975,
+                      "p_blank": 0.975
+                    }
+                  }
+                }
+              ],
+              "source": "extracted"
+            }
+          },
+          "timing": {
+            "read_ms": 264,
+            "forwards": {
+              "fields": [
+                14,
+                0
+              ],
+              "records": [
+                4,
+                0
+              ]
+            },
+            "stages": {
+              "fields": {
+                "reader": "recognition",
+                "doc": 0,
+                "branches": 0,
+                "generate": 171,
+                "locate": 0,
+                "verify": 18,
+                "assemble": 0
+              },
+              "cells": {
+                "doc": 0,
+                "point": 31,
+                "resolve": 12,
+                "extend": 0,
+                "contest": 29,
+                "lists": 0,
+                "verify": 0
+              }
+            },
+            "records": {
+              "variant": "A",
+              "listing_ms": 0,
+              "starts_ms": 0,
+              "cells_ms": 73,
+              "forwards": {
+                "listing": [
+                  0,
+                  0
+                ],
+                "starts": [
+                  0,
+                  0
+                ],
+                "cells": [
+                  4,
+                  0
+                ]
+              },
+              "records": 4,
+              "cells": 12,
+              "explicit": 0
+            },
+            "total_ms": 264,
+            "server_ms": 267
+          }
+        }
+      },
+      {
+        "step": 2,
+        "endpoint": "decide",
+        "status": 200,
+        "ms": 26,
+        "result": {
+          "model": "clocked-1.0",
+          "answers": {
+            "escalation": {
+              "type": "choice",
+              "choice": "needs_escalation",
+              "probabilities": {
+                "needs_escalation": 0.9956,
+                "no_escalation": 0.0023,
+                "not_established": 0.0021
+              },
+              "confidence": 0.9935
+            },
+            "complete": {
+              "type": "choice",
+              "choice": "complete",
+              "probabilities": {
+                "complete": 0.7851,
+                "incomplete": 0.1895,
+                "not_established": 0.0254
+              },
+              "confidence": 0.6777
+            }
+          },
+          "usage": {
+            "input_tokens": 87,
+            "output_tokens": 6
+          }
+        }
+      }
+    ],
+    "stopped": null,
+    "timing": {
+      "total_ms": 345,
+      "model_ms": 287
+    }
+  },
+  "grounding": {
+    "model": "clocked-1.0",
+    "grounded": 0.8866,
+    "ungrounded": 0.1134,
+    "verdict": "grounded",
+    "threshold": 0.5,
+    "instructions_used": "default",
+    "documents": [
+      {
+        "id": "std",
+        "share": 0.763,
+        "share_of_answer": 0.6765,
+        "claims": [
+          0
+        ]
+      },
+      {
+        "id": "log",
+        "share": 0.237,
+        "share_of_answer": 0.2101,
+        "claims": []
+      }
+    ],
+    "claims": [
+      {
+        "claim": "记录中 P-102 读数 0.71 MPa 状态为「偏高，需关注」，属于需关注的异常，应按规程上报。",
+        "kind": "claim",
+        "counted": true,
+        "weight": 1,
+        "supported": 0.8866,
+        "contradicted": 0.0631,
+        "not_stated": 0.0335,
+        "not_a_claim": 0.0168,
+        "verdict": "supported",
+        "sources": {
+          "std": 0.763,
+          "log": 0.237
+        },
+        "source": "std",
+        "evidence": {
+          "document": "std",
+          "quote": "第 3.2 条：现场巡检中，凡标注为偏高、偏低、泄漏、异响、破损或需关注的读数，均须立即上报值班班长，并在巡检系统中记录异常等级与处置建议。",
+          "start": 15,
+          "end": 85,
+          "confidence": 0.893
+        }
+      }
+    ],
+    "unsupported_claims": [],
+    "not_claims": [],
+    "weakest_claim": {
+      "index": 0,
+      "supported": 0.8866
+    },
+    "timing": {
+      "read_ms": 62,
+      "total_ms": 63
+    }
+  }
+}
